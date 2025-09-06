@@ -2,46 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Auto Location Send</title>
+  <title>Send Location</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-</head>
-<body style="background:#0b1020;color:white;display:flex;align-items:center;justify-content:center;height:100vh;">
-  <h3>Getting your location... Please allow GPS</h3>
-
-<script>
-(function(){
-  const PHONE = "923445070959";  // ✅ Aapka WhatsApp number
-
-  function fmt(n){return Number(n).toFixed(6)}
-
-  function composeMessage(p){
-    const gmaps = `https://maps.google.com/?q=${p.lat},${p.lon}`;
-    return `📍 Current Location\n\nLat: ${p.lat}\nLon: ${p.lon}\nAccuracy: ${p.acc} m\nTime: ${p.ts}\n\nMap: ${gmaps}`;
-  }
-
-  function sendLocation(p){
-    const text = encodeURIComponent(composeMessage(p));
-    // Sirf WhatsApp par redirect
-    window.open(`https://wa.me/${PHONE}?text=${text}`, "_blank");
-  }
-
-  if("geolocation" in navigator){
-    navigator.geolocation.getCurrentPosition(pos=>{
-      const p = {
-        lat: fmt(pos.coords.latitude),
-        lon: fmt(pos.coords.longitude),
-        acc: Math.round(pos.coords.accuracy),
-        ts: new Date().toLocaleString()
-      };
-      sendLocation(p);
-      document.body.innerHTML = "<h3>✅ Location sent to WhatsApp.</h3>";
-    }, err=>{
-      document.body.innerHTML = "<h3 style='color:red'>❌ Failed to get location. Please allow GPS.</h3>";
-    }, { enableHighAccuracy:true, timeout:15000, maximumAge:0 });
-  } else {
-    document.body.innerHTML = "<h3 style='color:red'>❌ GPS not supported on this device.</h3>";
-  }
-})();
-</script>
-</body>
-</html>
+  <style>
+    body {
+      background:#0b1020;
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      font-family:sans-serif;
+      text-align:center;
+    }
+    button {
+      padding:18px 26px;
+      font-size:1.2rem;
+      border:none;
+      border-radius:12px;
+      background:#2b3a71
