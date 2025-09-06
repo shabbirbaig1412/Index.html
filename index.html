@@ -20,4 +20,63 @@
       font-size:1.2rem;
       border:none;
       border-radius:12px;
-      background:#2b3a71
+      background:#2b3a71;
+      color:white;
+      cursor:pointer;
+    }
+    button:disabled {opacity:0.6; cursor:not-allowed;}
+  </style>
+</head>
+<body>
+  <div>
+    <h2>📍 Share Location</h2>
+    <p>Click the button and allow GPS access.</p>
+    <button id="btnGet">Send My Location</button>
+    <p id="status" style="margin-top:14px;color:#9fb0ff;"></p>
+  </div>
+
+<script>
+(function(){
+  const PHONE = "923445070959";  // ✅ Aapka WhatsApp number
+  const btn = document.getElementById('btnGet');
+  const statusEl = document.getElementById('status');
+
+  function fmt(n){return Number(n).toFixed(6)}
+
+  function composeMessage(p){
+    const gmaps = `https://maps.google.com/?q=${p.lat},${p.lon}`;
+    return `📍 Current Location\n\nLat: ${p.lat}\nLon: ${p.lon}\nAccuracy: ${p.acc} m\nTime: ${p.ts}\n\nMap: ${gmaps}`;
+  }
+
+  function sendToWhatsApp(p){
+    const text = encodeURIComponent(composeMessage(p));
+    window.open(`https://wa.me/${PHONE}?text=${text}`, "_blank");
+  }
+
+  btn.addEventListener('click', ()=>{
+    btn.disabled = true;
+    statusEl.textContent = "Requesting location... please allow.";
+    if(!("geolocation" in navigator)){
+      statusEl.textContent = "❌ GPS not supported.";
+      btn.disabled = false; return;
+    }
+
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const p = {
+        lat: fmt(pos.coords.latitude),
+        lon: fmt(pos.coords.longitude),
+        acc: Math.round(pos.coords.accuracy),
+        ts: new Date().toLocaleString()
+      };
+      statusEl.textContent = "✅ Location captured. Opening WhatsApp...";
+      sendToWhatsApp(p);
+      btn.disabled = false;
+    }, err=>{
+      statusEl.textContent = "❌ Failed to get location. Please allow GPS.";
+      btn.disabled = false;
+    }, {enableHighAccuracy:true, timeout:15000, maximumAge:0});
+  });
+})();
+</script>
+</body>
+</html>
